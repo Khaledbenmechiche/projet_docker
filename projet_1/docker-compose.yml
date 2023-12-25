@@ -1,0 +1,40 @@
+version: '3'
+
+services:
+  wordpress-mariadb:
+    image: wordpress:latest
+    restart: always
+    ports:
+      - "8080:80"  # Redirection du port 8080 de l'hôte vers le port 80 du conteneur
+    environment:
+      WORDPRESS_DB_HOST: db  # Hôte de la base de données pour WordPress
+      WORDPRESS_DB_USER: lydia  # Nom d'utilisateur de la base de données WordPress
+      WORDPRESS_DB_PASSWORD: 12345  # Mot de passe de la base de données WordPress
+      WORDPRESS_DB_NAME: wordpress  # Nom de la base de données WordPress
+    depends_on:
+      - db  # Dépendance du service WordPress sur le service de base de données
+    volumes:
+      - wordpress_data:/var/www/html  # Montage d'un volume pour les données de WordPress
+
+  db:
+    image: mariadb:latest
+    restart: always
+    environment:
+      MYSQL_DATABASE: wordpress  # Nom de la base de données MariaDB
+      MYSQL_USER: lydia  # Nom d'utilisateur de la base de données MariaDB
+      MYSQL_PASSWORD: 12345  # Mot de passe de la base de données MariaDB
+      MYSQL_ROOT_PASSWORD: "12345"  # Mot de passe root de la base de données MariaDB
+    volumes:
+      - db_data:/var/lib/mysql  # Montage d'un volume pour les données de la base de données
+      - ./my.cnf:/etc/mysql/my.cnf  # Liaison d'un fichier de configuration personnalisé
+
+volumes:
+  wordpress_data:  # Volume pour stocker les données de WordPress
+  db_data:  # Volume pour stocker les données de la base de données
+
+networks:
+  frontend_network:  # Définition du réseau frontend (non utilisé dans ce code)
+    # Le réseau frontend peut être configuré ici si nécessaire
+  backend_network:  # Définition du réseau backend pour les services
+    # Réseau pour connecter les services WordPress et MariaDB
+    driver: bridge  # Ajout d'un pilote de réseau, par exemple 'bridge'

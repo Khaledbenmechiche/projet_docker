@@ -1,0 +1,51 @@
+version: '3'  # Version du format Docker Compose utilisé
+
+services:  # Section des services Docker
+  es01:  # Service Elasticsearch 01
+	image: docker.elastic.co/elasticsearch/elasticsearch:${ES_VERSION}  # Image Docker d'Elasticsearch avec la version spécifiée
+	container_name: es01  # Nom du conteneur
+	mem_limit: 1500m  # Limite mémoire pour le conteneur Elasticsearch
+	volumes:  # Configuration des volumes Docker
+  	- esdata01:/usr/share/elasticsearch/data  # Montage du volume pour la persistance des données
+	ports:  # Configuration des ports
+  	- "9200:9200"  # Mappage du port 9200 du conteneur vers le port 9200 de l'hôte
+	networks:  # Configuration des réseaux
+  	- es-net  # Utilisation du réseau personnalisé 'es-net'
+	environment:  # Configuration des variables d'environnement pour Elasticsearch
+  	- node.name=es01  # Nom du nœud Elasticsearch
+  	- discovery.seed_hosts=es02,es03  # Nœuds de découverte pour le clustering
+  	- cluster.initial_master_nodes=es01,es02,es03  # Nœuds maîtres initiaux pour le clustering
+  	- cluster.name=my-cluster  # Nom du cluster
+
+  es02:  # Service Elasticsearch 02
+	image: docker.elastic.co/elasticsearch/elasticsearch:${ES_VERSION}
+	container_name: es02
+	mem_limit: 1500m
+	volumes:
+  	- esdata02:/usr/share/elasticsearch/data
+	networks:
+  	- es-net
+	environment:
+  	- node.name=es02
+  	- discovery.seed_hosts=es01,es03
+  	- cluster.initial_master_nodes=es01,es02,es03
+  	- cluster.name=my-cluster
+
+  es03:  # Service Elasticsearch 03
+	image: docker.elastic.co/elasticsearch/elasticsearch:${ES_VERSION}
+	container_name: es03
+	mem_limit: 1500m
+	volumes:
+  	- esdata03:/usr/share/elasticsearch/data
+	networks:
+  	- es-net
+	environment:
+  	- node.name=es03
+  	- discovery.seed_hosts=es01,es02
+  	- cluster.initial_master_nodes=es01,es02,es03
+  	- cluster.name=my-cluster
+
+  kibana:  # Service Kibana
+	image: docker.elastic.co/kibana/kibana:${ES_VERSION}  # Image Docker de Kibana avec la version spécifiée
+	container_name: kibana
+	ports:
